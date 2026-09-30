@@ -1,0 +1,29 @@
+[33mcommit 1d8e7991ba6222cebf6ee03cf14e374876c594e8[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32msingh/R2[m[33m)[m
+Author: PRATEEK <singhcat603@gmail.com>
+Date:   Wed Sep 30 19:13:34 2026 +0530
+
+    feat(r2): shared components and fake data
+
+[33mcommit 38a4ec67791a86bd879b86c112507b8059425b33[m
+Author: prayanshTripathi <prayanshtripathi@gmail.com>
+Date:   Wed Sep 30 18:57:27 2026 +0530
+
+    feat(r1): routes, api contract stubs
+
+[33mcommit 86f99ddcece6e4bce71c88eb2b8bd423192e1e5f[m
+Author: prayanshTripathi <prayanshtripathi@gmail.com>
+Date:   Wed Sep 30 18:46:41 2026 +0530
+
+    docs: project rules
+
+[33mcommit 4bbcc02148aa3925ea033978f61a398fcb6ef5cc[m
+Author: prayanshTripathi <prayanshtripathi@gmail.com>
+Date:   Wed Sep 30 14:18:50 2026 +0530
+
+    config: vercel.json
+
+[33mcommit e806ec279e2547fed29fdde4bdc045b3aace23a0[m
+Author: prayanshTripathi <prayanshtripathi@gmail.com>
+Date:   Wed Sep 30 14:17:07 2026 +0530
+
+    Added: example environment variables file

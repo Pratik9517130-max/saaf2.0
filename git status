@@ -1,0 +1,81 @@
+[33mcommit 1d8e7991ba6222cebf6ee03cf14e374876c594e8[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32msingh/R2[m[33m)[m
+Author: PRATEEK <singhcat603@gmail.com>
+Date:   Wed Sep 30 19:13:34 2026 +0530
+
+    feat(r2): shared components and fake data
+
+[1mdiff --git a/src/styles/token.css b/src/styles/token.css[m
+[1mnew file mode 100644[m
+[1mindex 0000000..6d60019[m
+[1m--- /dev/null[m
+[1m+++ b/src/styles/token.css[m
+[36m@@ -0,0 +1,68 @@[m
+[32m+[m[32m/* src/styles/tokens.css  (owner: R2)  "Civic Notice Board": warm paper, forest green, terracotta */[m
+[32m+[m[32m@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Public+Sans:wght@400;500;600&display=swap');[m
+[32m+[m
+[32m+[m[32m:root {[m
+[32m+[m[32m    --bg: #F7F3EA;[m
+[32m+[m[32m    /* warm off-white page */[m
+[32m+[m[32m    --card: #FFFDF7;[m
+[32m+[m[32m    /* notice card */[m
+[32m+[m[32m    --ink: #1F2A22;[m
+[32m+[m[32m    /* text */[m
+[32m+[m[32m    --muted: #6B6F66;[m
+[32m+[m[32m    /* secondary text */[m
+[32m+[m[32m    --line: #DDD5C3;[m
+[32m+[m[32m    /* borders */[m
+[32m+[m[32m    --green: #2F5D3A;[m
+[32m+[m[32m    /* primary */[m
+[32m+[m[32m    --green-ink: #FFFFFF;[m
+[32m+[m[32m    --green-soft: #E3ECDD;[m
+[32m+[m[32m    --terra: #B5523B;[m
+[32m+[m[32m    /* alerts, critical */[m
+[32m+[m[32m    --terra-soft: #F3DDD5;[m
+[32m+[m[32m    --amber: #A8741A;[m
+[32m+[m[32m    /* high */[m
+[32m+[m[32m    --amber-soft: #F4E6C8;[m
+[32m+[m[32m    --olive: #6B7F3A;[m
+[32m+[m[32m    /* medium */[m
+[32m+[m[32m    --olive-soft: #E8EDD6;[m
+[32m+[m[32m    --grey-soft: #ECE8DC;[m
+[32m+[m[32m    /* low */[m
+[32m+[m
+[32m+[m[32m    --font-head: 'Fraunces', Georgia, 'Times New Roman', serif;[m
+[32m+[m[32m    --font-body: 'Public Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;[m
+[32m+[m
+[32m+[m[32m    --r-sm: 6px;[m
+[32m+[m[32m    --r-md: 10px;[m
+[32m+[m[32m    --s-1: 4px;[m
+[32m+[m[32m    --s-2: 8px;[m
+[32m+[m[32m    --s-3: 12px;[m
+[32m+[m[32m    --s-4: 16px;[m
+[32m+[m[32m    --s-5: 24px;[m
+[32m+[m[32m    --s-6: 32px;[m
+[32m+[m[32m    --shadow: 0 1px 0 rgba(31, 42, 34, .06);[m
+[32m+[m[32m    /* flat, paper-like */[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m/* dark mode later = redefine the variables above inside @media (prefers-color-scheme: dark) */[m
+[32m+[m
+[32m+[m[32m* {[m
+[32m+[m[32m    box-sizing: border-box;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32mbody {[m
+[32m+[m[32m    margin: 0;[m
+[32m+[m[32m    background: var(--bg);[m
+[32m+[m[32m    color: var(--ink);[m
+[32m+[m[32m    font-family: var(--font-body);[m
+[32m+[m[32m    font-size: 15px;[m
+[32m+[m[32m    line-height: 1.45;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32mh1,[m
+[32m+[m[32mh2,[m
+[32m+[m[32mh3 {[m
+[32m+[m[32m    font-family: var(--font-head);[m
+[32m+[m[32m    font-weight: 700;[m
+[32m+[m[32m    letter-spacing: -0.01em;[m
+[32m+[m[32m    margin: 0 0 var(--s-2);[m
+[32m+[m[32m}[m
+\ No newline at end of file[m
