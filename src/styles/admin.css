@@ -1,0 +1,513 @@
+/* src/styles/admin.css - Civic Notice Board Admin Styles */
+
+.admin-page {
+  min-height: 100vh;
+  background-color: var(--bg);
+  color: var(--ink);
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-container {
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: var(--s-4) var(--s-3) var(--s-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+}
+
+/* Header */
+.admin-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  margin-bottom: var(--s-1);
+}
+
+.admin-title-group {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+}
+
+.admin-title {
+  font-family: var(--font-head);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0;
+}
+
+.admin-badge-pill {
+  font-size: 11px;
+  font-weight: 700;
+  background-color: var(--amber-soft);
+  color: var(--amber);
+  border: 1px solid var(--amber);
+  padding: 2px var(--s-2);
+  border-radius: var(--r-sm);
+  text-transform: uppercase;
+}
+
+.admin-nav-link {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--green);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Number Tiles Grid */
+.admin-tiles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: var(--s-3);
+}
+
+.admin-tile {
+  background-color: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  padding: var(--s-4);
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+}
+
+.admin-tile-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.admin-tile-num {
+  font-family: var(--font-head);
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.admin-tile-desc {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.admin-tile-open .admin-tile-num {
+  color: var(--amber);
+}
+
+.admin-tile-progress .admin-tile-num {
+  color: var(--olive);
+}
+
+.admin-tile-resolved .admin-tile-num {
+  color: var(--green);
+}
+
+.admin-tile-overdue .admin-tile-num {
+  color: var(--terra);
+}
+
+/* Counts Summary Tables Grid */
+.admin-summary-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--s-3);
+}
+
+@media (min-width: 768px) {
+  .admin-summary-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.admin-summary-card {
+  background-color: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow);
+  padding: var(--s-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+
+.admin-summary-title {
+  font-family: var(--font-head);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0;
+}
+
+.admin-simple-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.admin-simple-table th {
+  text-align: left;
+  padding: var(--s-2) var(--s-2);
+  border-bottom: 2px solid var(--line);
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.admin-simple-table td {
+  padding: var(--s-2) var(--s-2);
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+}
+
+.admin-simple-table tr:last-child td {
+  border-bottom: none;
+}
+
+.admin-table-count {
+  font-weight: 700;
+  text-align: right;
+}
+
+/* Dense Priority Table Card */
+.admin-table-card {
+  background-color: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow);
+  padding: var(--s-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+
+.admin-table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+}
+
+.admin-table-title {
+  font-family: var(--font-head);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0;
+}
+
+/* Filter Chips */
+.filter-chips-row {
+  display: flex;
+  align-items: center;
+  gap: var(--s-1);
+  flex-wrap: wrap;
+}
+
+.filter-chip {
+  background-color: var(--bg);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  padding: var(--s-1) var(--s-3);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.filter-chip:hover {
+  background-color: var(--green-soft);
+  border-color: var(--green);
+}
+
+.filter-chip.active {
+  background-color: var(--green);
+  color: var(--green-ink);
+  border-color: var(--green);
+}
+
+/* Responsive Table Wrapper */
+.admin-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+}
+
+.admin-dense-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.admin-dense-table th {
+  background-color: var(--bg);
+  padding: var(--s-2) var(--s-3);
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+  border-bottom: 2px solid var(--line);
+}
+
+.admin-dense-table td {
+  padding: var(--s-2) var(--s-3);
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+  vertical-align: middle;
+}
+
+.admin-table-row {
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+}
+
+.admin-table-row:hover {
+  background-color: var(--green-soft);
+}
+
+.admin-table-row:last-child td {
+  border-bottom: none;
+}
+
+.overdue-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--terra);
+  background-color: var(--terra-soft);
+  border: 1px solid var(--terra);
+  padding: 1px var(--s-1);
+  border-radius: var(--r-sm);
+  text-transform: uppercase;
+}
+
+/* Admin Complaint Detail Styles */
+.admin-complaint-card {
+  background-color: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow);
+  padding: var(--s-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+
+.admin-reporter-box {
+  background-color: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  padding: var(--s-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+}
+
+.admin-reporter-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.admin-reporter-details {
+  font-size: 14px;
+  color: var(--ink);
+  font-weight: 500;
+}
+
+/* Admin Action Buttons */
+.admin-actions-card {
+  background-color: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow);
+  padding: var(--s-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+
+.admin-actions-title {
+  font-family: var(--font-head);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0;
+}
+
+.admin-action-btn-row {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  flex-wrap: wrap;
+}
+
+.admin-btn {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  padding: var(--s-2) var(--s-4);
+  border-radius: var(--r-sm);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.admin-btn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.admin-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.admin-btn-ack {
+  background-color: var(--amber-soft);
+  color: var(--amber);
+  border-color: var(--amber);
+}
+
+.admin-btn-progress {
+  background-color: var(--olive-soft);
+  color: var(--olive);
+  border-color: var(--olive);
+}
+
+.admin-btn-resolve {
+  background-color: var(--green);
+  color: var(--green-ink);
+  border-color: var(--green);
+}
+
+.admin-btn-reject {
+  background-color: var(--terra-soft);
+  color: var(--terra);
+  border-color: var(--terra);
+}
+
+/* Modal Overlay */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(31, 42, 34, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--s-3);
+  z-index: 100;
+}
+
+.modal-card {
+  background-color: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  box-shadow: 0 4px 12px rgba(31, 42, 34, 0.15);
+  width: 100%;
+  max-width: 480px;
+  padding: var(--s-5) var(--s-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal-title {
+  font-family: var(--font-head);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0;
+}
+
+.modal-close-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-close-btn:hover {
+  color: var(--ink);
+}
+
+.modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--s-2);
+  margin-top: var(--s-2);
+}
+
+.modal-cancel-btn {
+  background-color: var(--bg);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  border-radius: var(--r-sm);
+  padding: var(--s-2) var(--s-3);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.modal-submit-btn {
+  background-color: var(--green);
+  color: var(--green-ink);
+  border: 1px solid var(--green);
+  border-radius: var(--r-sm);
+  padding: var(--s-2) var(--s-4);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.modal-submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.modal-reject-btn {
+  background-color: var(--terra);
+  color: var(--green-ink);
+  border: 1px solid var(--terra);
+  border-radius: var(--r-sm);
+  padding: var(--s-2) var(--s-4);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.modal-reject-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

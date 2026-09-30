@@ -81,6 +81,27 @@ const mockFeedItems = [
     is_mine: false,
     photos: ['https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?w=600'],
   },
+  {
+    id: 'comp-4',
+    issue_type: 'missed_collection',
+    description: 'Waste collection missed for entire block for 4 days',
+    block: 'A',
+    area_name: 'Tower A Basement',
+    status: 'submitted',
+    priority: 'critical',
+    priority_reason: 'Severe health risk from rotting waste',
+    resolution_note: null,
+    after_photo_url: null,
+    created_at: new Date(Date.now() - 4 * 86400000).toISOString(),
+    resolved_at: null,
+    is_anonymous: false,
+    reporter_name: 'Rohit Sharma',
+    reporter_avatar: '',
+    upvote_count: 9,
+    i_upvoted: false,
+    is_mine: false,
+    photos: ['https://images.unsplash.com/photo-1605600659908-0ef719419d41?w=600'],
+  },
 ]
 
 const mockPickups = [
@@ -239,5 +260,12 @@ export async function adminSetStatus(id, status, { note, after_photo_url } = {})
   }
   if (status === 'rejected' && !note) {
     throw new Error('Reject requires note')
+  }
+  const item = mockFeedItems.find((c) => c.id === id)
+  if (item) {
+    item.status = status
+    if (note) item.resolution_note = note
+    if (after_photo_url) item.after_photo_url = after_photo_url
+    if (status === 'resolved') item.resolved_at = new Date().toISOString()
   }
 }
