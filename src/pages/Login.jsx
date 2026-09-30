@@ -15,13 +15,30 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
+
+    const cleanEmail = email.trim()
+    if (!cleanEmail) {
+      setError('Please enter your email address.')
+      return
+    }
+    if (!password) {
+      setError('Please enter your password.')
+      return
+    }
+
     setLoading(true)
 
     try {
-      await signIn(email, password)
+      await signIn(cleanEmail, password)
       navigate('/')
     } catch (err) {
-      setError(err?.message || 'Failed to sign in')
+      console.error('Sign in error:', err)
+      const rawMsg = err?.message || 'Failed to sign in'
+      if (rawMsg.toLowerCase().includes('failed to fetch')) {
+        setError('Network error: Unable to connect to backend server. Please verify your internet connection or check Supabase settings in .env.local.')
+      } else {
+        setError(rawMsg)
+      }
     } finally {
       setLoading(false)
     }

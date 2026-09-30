@@ -1,6 +1,21 @@
 import { supabase } from '../lib/supabase'
 
 /**
+ * Validates that Supabase environment variables are present and not placeholders
+ */
+function checkSupabaseConfig() {
+  const url = import.meta.env.VITE_SUPABASE_URL
+  const key = import.meta.env.VITE_SUPABASE_ANON_KEY
+
+  if (!url || url.includes('placeholder')) {
+    throw new Error('Supabase URL is not configured. Please set VITE_SUPABASE_URL in your .env.local file, or switch to VITE_USE_MOCK=true.')
+  }
+  if (!key || key === 'placeholder') {
+    throw new Error('Supabase Anon Key is not configured. Please set VITE_SUPABASE_ANON_KEY in your .env.local file, or switch to VITE_USE_MOCK=true.')
+  }
+}
+
+/**
  * Sign in existing user with email and password
  * @param {string} email
  * @param {string} password
@@ -11,12 +26,32 @@ export async function signIn(email, password) {
     throw new Error('Email and password are required')
   }
 
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  })
+  checkSupabaseConfig()
+
+  let data, error
+  try {
+    const res = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    })
+    data = res.data
+    error = res.error
+  } catch (netErr) {
+    const msg = netErr?.message || ''
+    if (msg.toLowerCase().includes('failed to fetch') || netErr.name === 'TypeError') {
+      throw new Error('Network error: Unable to connect to Supabase backend. Please check your internet connection or backend URL.')
+    }
+    throw netErr
+  }
 
   if (error) {
+    const msg = error.message || ''
+    if (msg.toLowerCase().includes('failed to fetch')) {
+      throw new Error('Network error: Unable to reach authentication server. Please check your network connection or Supabase URL in .env.local.')
+    }
+    if (msg.toLowerCase().includes('invalid login credentials') || error.status === 400) {
+      throw new Error('Invalid email or password. Please verify your credentials and try again.')
+    }
     throw new Error(error.message || 'Failed to sign in')
   }
 
@@ -24,12 +59,32 @@ export async function signIn(email, password) {
     throw new Error('No user returned after sign in')
   }
 
-  const profile = await getSession()
-  if (!profile) {
-    throw new Error('User profile not found')
+  try {
+    const profile = await getSession()
+    if (!profile) {
+      return {
+        id: data.user.id,
+        name: data.user.user_metadata?.name || email.split('@')[0],
+        email: data.user.email,
+        flat_no: data.user.user_metadata?.flat_no || '',
+        block: data.user.user_metadata?.block || '',
+        phone: data.user.user_metadata?.phone || '',
+        role: data.user.user_metadata?.role || 'resident',
+      }
+    }
+    return profile
+  } catch (err) {
+    console.warn('Failed to retrieve full profile after sign in, using auth metadata:', err)
+    return {
+      id: data.user.id,
+      name: data.user.user_metadata?.name || email.split('@')[0],
+      email: data.user.email,
+      flat_no: data.user.user_metadata?.flat_no || '',
+      block: data.user.user_metadata?.block || '',
+      phone: data.user.user_metadata?.phone || '',
+      role: data.user.user_metadata?.role || 'resident',
+    }
   }
-
-  return profile
 }
 
 /**
@@ -42,12 +97,28 @@ export async function signUp({ email, password, name, flat_no, block, phone, joi
     throw new Error('Invalid join code')
   }
 
+  checkSupabaseConfig()
+
   // 1. Verify join code via RPC
-  const { data: isValidCode, error: rpcError } = await supabase.rpc('verify_join_code', {
-    code: join_code,
-  })
+  let isValidCode, rpcError
+  try {
+    const res = await supabase.rpc('verify_join_code', {
+      code: join_code,
+    })
+    isValidCode = res.data
+    rpcError = res.error
+  } catch (err) {
+    const msg = err?.message || ''
+    if (msg.toLowerCase().includes('failed to fetch')) {
+      throw new Error('Network error: Unable to verify join code. Please check your internet connection.')
+    }
+    throw err
+  }
 
   if (rpcError) {
+    if (rpcError.message?.toLowerCase().includes('failed to fetch')) {
+      throw new Error('Network error: Unable to verify join code. Please check your internet connection.')
+    }
     throw new Error(rpcError.message || 'Failed to verify join code')
   }
 
@@ -56,20 +127,34 @@ export async function signUp({ email, password, name, flat_no, block, phone, joi
   }
 
   // 2. Sign up via Supabase Auth with metadata
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: {
-      data: {
-        name,
-        flat_no,
-        block,
-        phone,
+  let data, error
+  try {
+    const res = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          name,
+          flat_no,
+          block,
+          phone,
+        },
       },
-    },
-  })
+    })
+    data = res.data
+    error = res.error
+  } catch (err) {
+    const msg = err?.message || ''
+    if (msg.toLowerCase().includes('failed to fetch')) {
+      throw new Error('Network error: Unable to connect to Supabase auth server. Please check your internet connection.')
+    }
+    throw err
+  }
 
   if (error) {
+    if (error.message?.toLowerCase().includes('failed to fetch')) {
+      throw new Error('Network error: Unable to reach authentication server. Please check your connection.')
+    }
     throw new Error(error.message || 'Failed to sign up')
   }
 
@@ -78,18 +163,18 @@ export async function signUp({ email, password, name, flat_no, block, phone, joi
   }
 
   // 3. Return profile row
-  const { data: profile, error: profileError } = await supabase
-    .from('profiles')
-    .select('id, name, flat_no, block, phone, role')
-    .eq('id', data.user.id)
-    .maybeSingle()
+  try {
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('id, name, flat_no, block, phone, role')
+      .eq('id', data.user.id)
+      .maybeSingle()
 
-  if (profileError) {
-    throw new Error(profileError.message || 'Failed to fetch user profile after sign up')
-  }
-
-  if (profile) {
-    return profile
+    if (!profileError && profile) {
+      return profile
+    }
+  } catch (err) {
+    console.warn('Profile fetch error after signup:', err)
   }
 
   // Fallback profile if database trigger is slightly delayed
@@ -119,27 +204,47 @@ export async function signOut() {
  * @returns {Promise<object|null>} profile = {id, name, flat_no, block, phone, role}
  */
 export async function getSession() {
-  const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-
-  if (sessionError) {
-    throw new Error(sessionError.message || 'Failed to get auth session')
-  }
-
-  if (!session?.user) {
+  const url = import.meta.env.VITE_SUPABASE_URL
+  const key = import.meta.env.VITE_SUPABASE_ANON_KEY
+  if (!url || url.includes('placeholder') || !key || key === 'placeholder') {
     return null
   }
 
-  const { data: profile, error: profileError } = await supabase
-    .from('profiles')
-    .select('id, name, flat_no, block, phone, role')
-    .eq('id', session.user.id)
-    .maybeSingle()
+  try {
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession()
 
-  if (profileError) {
-    throw new Error(profileError.message || 'Failed to fetch user profile')
+    if (sessionError) {
+      console.warn('Failed to get auth session:', sessionError.message)
+      return null
+    }
+
+    if (!session?.user) {
+      return null
+    }
+
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('id, name, flat_no, block, phone, role')
+      .eq('id', session.user.id)
+      .maybeSingle()
+
+    if (profileError) {
+      console.warn('Failed to fetch user profile:', profileError.message)
+      return {
+        id: session.user.id,
+        name: session.user.user_metadata?.name || 'Resident',
+        flat_no: session.user.user_metadata?.flat_no || '',
+        block: session.user.user_metadata?.block || '',
+        phone: session.user.user_metadata?.phone || '',
+        role: session.user.user_metadata?.role || 'resident',
+      }
+    }
+
+    return profile || null
+  } catch (err) {
+    console.warn('getSession error:', err?.message)
+    return null
   }
-
-  return profile || null
 }
 
 /**
@@ -268,7 +373,7 @@ export async function getComplaint(id) {
 }
 
 /**
- * Upload photo file to bucket 'photos' under userId/uuid.jpg
+ * Upload photo file to bucket 'photos' under userId/uuid.ext
  * @param {File|Blob} file
  * @returns {Promise<string>} public url
  */
@@ -283,8 +388,16 @@ export async function uploadPhoto(file) {
   }
 
   const userId = session.user.id
-  const fileName = `${crypto.randomUUID()}.jpg`
-  const filePath = `${userId}/${fileName}`
+  let ext = 'jpg'
+  if (file.name && file.name.includes('.')) {
+    ext = file.name.split('.').pop().toLowerCase()
+  } else if (file.type) {
+    const mimeExt = file.type.split('/')[1]
+    if (mimeExt) ext = mimeExt.toLowerCase().replace('jpeg', 'jpg')
+  }
+  const cleanExt = ext.replace(/[^a-z0-9]/gi, '') || 'jpg'
+
+  const filePath = `${userId}/${crypto.randomUUID()}.${cleanExt}`
 
   const { error: uploadError } = await supabase.storage
     .from('photos')
@@ -294,6 +407,12 @@ export async function uploadPhoto(file) {
     })
 
   if (uploadError) {
+    if (uploadError.message?.toLowerCase().includes('bucket not found') || uploadError.error === 'Bucket not found') {
+      throw new Error('Photo storage bucket ("photos") not found. Please ensure the "photos" bucket is created in Supabase Storage.')
+    }
+    if (uploadError.message?.toLowerCase().includes('failed to fetch')) {
+      throw new Error('Network error: Unable to upload photo to storage server.')
+    }
     throw new Error(uploadError.message || 'Failed to upload photo')
   }
 
@@ -329,6 +448,8 @@ export async function createComplaint({
   }
 
   const reporter_id = session.user.id
+  const validPriorities = ['low', 'medium', 'high', 'critical']
+  const finalPriority = validPriorities.includes(priority) ? priority : 'medium'
 
   const { data: complaint, error: complaintError } = await supabase
     .from('complaints')
@@ -336,9 +457,9 @@ export async function createComplaint({
       reporter_id,
       issue_type,
       description: description || '',
-      area_id,
+      area_id: Number(area_id) || area_id,
       is_anonymous: Boolean(is_anonymous),
-      priority: priority || 'medium',
+      priority: finalPriority,
       priority_reason: priority_reason || null,
       ai_suggested_type: ai_suggested_type || null,
       status: 'submitted',
@@ -347,6 +468,9 @@ export async function createComplaint({
     .single()
 
   if (complaintError) {
+    if (complaintError.message?.toLowerCase().includes('failed to fetch')) {
+      throw new Error('Network error: Unable to submit complaint to server.')
+    }
     throw new Error(complaintError.message || 'Failed to create complaint')
   }
 
@@ -474,10 +598,18 @@ export async function adminGetComplaints() {
 
   const { data: complaints, error: complaintsError } = await supabase
     .from('complaints')
-    .select('*, profiles(name, flat_no, phone), areas(block, area_name), complaint_photos(url, position)')
+    .select(`
+      *,
+      reporter:profiles!reporter_id(name, flat_no, phone, avatar_url),
+      area:areas!area_id(block, area_name),
+      complaint_photos(url, position)
+    `)
     .order('created_at', { ascending: false })
 
   if (complaintsError) {
+    if (complaintsError.message?.toLowerCase().includes('failed to fetch')) {
+      throw new Error('Network error: Unable to fetch admin complaints.')
+    }
     throw new Error(complaintsError.message || 'Failed to fetch admin complaints')
   }
 
@@ -506,22 +638,23 @@ export async function adminGetComplaints() {
       .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
       .map((p) => p.url)
 
+    const reporter = row.reporter || row.profiles || {}
     const reporterName = row.is_anonymous
       ? 'Anonymous resident'
-      : (row.profiles?.name || 'Resident')
+      : (reporter.name || 'Resident')
 
     const reporterReal = {
-      name: row.profiles?.name || 'Unknown',
-      flat_no: row.profiles?.flat_no || 'N/A',
-      phone: row.profiles?.phone || 'N/A',
+      name: reporter.name || 'Unknown',
+      flat_no: reporter.flat_no || 'N/A',
+      phone: reporter.phone || 'N/A',
     }
 
     return {
       id: row.id,
       issue_type: row.issue_type,
       description: row.description || '',
-      block: row.areas?.block || '',
-      area_name: row.areas?.area_name || '',
+      block: row.area?.block || row.areas?.block || '',
+      area_name: row.area?.area_name || row.areas?.area_name || '',
       status: row.status,
       priority: row.priority,
       priority_reason: row.priority_reason,
@@ -531,7 +664,7 @@ export async function adminGetComplaints() {
       resolved_at: row.resolved_at,
       is_anonymous: row.is_anonymous,
       reporter_name: reporterName,
-      reporter_avatar: row.is_anonymous ? null : (row.profiles?.avatar_url || ''),
+      reporter_avatar: row.is_anonymous ? null : (reporter.avatar_url || ''),
       upvote_count: upvoteCounts[row.id] || 0,
       i_upvoted: userUpvotes.has(row.id),
       is_mine: currentUserId ? row.reporter_id === currentUserId : false,

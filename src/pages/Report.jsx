@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api'
 import { analyzeReport } from '../lib/ai'
@@ -34,6 +34,11 @@ export default function Report() {
   const [aiAnalyzing, setAiAnalyzing] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState(null)
+
+  const selectedAreaIdRef = useRef(selectedAreaId)
+  selectedAreaIdRef.current = selectedAreaId
+  const areasRef = useRef(areas)
+  areasRef.current = areas
 
   const navigate = useNavigate()
 
@@ -113,7 +118,7 @@ export default function Report() {
     })
   }
 
-  // Debounced AI analysis trigger: after first photo or after 10+ characters
+  // Debounced AI analysis trigger: ONLY runs when a photo is added/removed or description changes
   useEffect(() => {
     const hasPhoto = photos.length > 0
     const hasEnoughDescription = description.trim().length >= 10
@@ -122,10 +127,13 @@ export default function Report() {
       return
     }
 
+    let isCurrent = true
+
     const timer = setTimeout(async () => {
       setAiAnalyzing(true)
       try {
-        const areaObj = areas.find((a) => String(a.id) === String(selectedAreaId))
+        const currentAreaId = selectedAreaIdRef.current
+        const areaObj = areasRef.current.find((a) => String(a.id) === String(currentAreaId))
         const areaName = areaObj ? `${areaObj.block} - ${areaObj.area_name}` : ''
         const rawFiles = photos.map((p) => p.file)
 
@@ -134,18 +142,23 @@ export default function Report() {
           files: rawFiles,
           area: areaName,
         })
-        if (result) {
+        if (isCurrent && result) {
           setAiSuggestion(result)
         }
       } catch (err) {
         console.warn('AI analysis error:', err)
       } finally {
-        setAiAnalyzing(false)
+        if (isCurrent) {
+          setAiAnalyzing(false)
+        }
       }
     }, 600)
 
-    return () => clearTimeout(timer)
-  }, [photos, description, selectedAreaId, areas])
+    return () => {
+      isCurrent = false
+      clearTimeout(timer)
+    }
+  }, [photos, description])
 
   // Form submission
   const handleSubmit = async (e) => {
@@ -182,13 +195,20 @@ export default function Report() {
       navigate('/')
     } catch (err) {
       console.error('Failed to submit report:', err)
-      setError(err?.message || 'Failed to submit report. Please try again.')
+      const rawMessage = err?.message || 'Failed to submit report. Please try again.'
+      let userFriendlyMsg = rawMessage
+      if (rawMessage.toLowerCase().includes('bucket not found')) {
+        userFriendlyMsg = 'Photo storage bucket ("photos") was not found. Please ensure the "photos" bucket is created in Supabase Storage.'
+      } else if (rawMessage.toLowerCase().includes('failed to fetch')) {
+        userFriendlyMsg = 'Network error: Unable to connect to server. Please check your network connection and try again.'
+      }
+      setError(userFriendlyMsg)
+    } finally {
       setSubmitting(false)
     }
   }
 
   const availableAreas = areas.filter((a) => a.block === selectedBlock)
-  const isAiActive = (photos.length > 0 || description.trim().length >= 10) && aiSuggestion
 
   return (
     <div className="report-page">
@@ -291,16 +311,16 @@ export default function Report() {
           </div>
 
           {/* AI Suggestion Card */}
-          {aiAnalyzing && (
+          {aiAnalyzing && !aiSuggestion && (
             <div className="ai-suggestion-card ai-loading">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg className="ai-spinner" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 12a9 9 0 1 1-6.219-8.56" />
               </svg>
               <span>Analyzing report with AI...</span>
             </div>
           )}
 
-          {isAiActive && !aiAnalyzing && (
+          {aiSuggestion && (
             <div className="ai-suggestion-card">
               <div className="ai-card-header">
                 <div className="ai-badge-group">
@@ -308,6 +328,14 @@ export default function Report() {
                   <span className="ai-source-tag">
                     {aiSuggestion.source === 'ai' ? 'AI' : 'Cached'}
                   </span>
+                  {aiAnalyzing && (
+                    <span className="ai-updating-badge">
+                      <svg className="ai-spinner" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                      </svg>
+                      Updating...
+                    </span>
+                  )}
                 </div>
                 <PriorityBadge priority={aiSuggestion.priority} />
               </div>

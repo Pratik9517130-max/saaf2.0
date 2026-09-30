@@ -178,6 +178,33 @@
   border-color: var(--line);
 }
 
+@keyframes aiSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.ai-spinner {
+  animation: aiSpin 1s linear infinite;
+  flex-shrink: 0;
+}
+
+.ai-updating-badge {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--olive);
+  background-color: var(--olive-soft);
+  border: 1px solid var(--olive);
+  padding: 1px var(--s-1);
+  border-radius: var(--r-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .ai-card-header {
   display: flex;
   align-items: center;
