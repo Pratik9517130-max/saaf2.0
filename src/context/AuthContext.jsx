@@ -1,5 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useEffect, useState } from 'react'
+import { supabase } from '../lib/supabase'
 import { api } from '../api'
 
 const AuthContext = createContext(null)
@@ -10,6 +11,7 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     let isMounted = true
+
     async function initSession() {
       try {
         const sessionProfile = await api.getSession()
@@ -30,8 +32,29 @@ export function AuthProvider({ children }) {
 
     initSession()
 
+    // Listen for Supabase auth state transitions (sign in, sign out, token refresh)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!isMounted) return
+
+      if (event === 'SIGNED_OUT') {
+        setProfile(null)
+      } else if (event === 'SIGNED_IN' || event === 'USER_UPDATED' || event === 'TOKEN_REFRESHED') {
+        if (session?.user) {
+          try {
+            const userProfile = await api.getSession()
+            if (isMounted) {
+              setProfile(userProfile)
+            }
+          } catch (err) {
+            console.error('Failed to sync profile on auth state change:', err)
+          }
+        }
+      }
+    })
+
     return () => {
       isMounted = false
+      subscription?.unsubscribe()
     }
   }, [])
 
