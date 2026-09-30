@@ -60,6 +60,27 @@ const mockFeedItems = [
     is_mine: false,
     photos: ['https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?w=600'],
   },
+  {
+    id: 'comp-3',
+    issue_type: 'illegal_dumping',
+    description: 'Bulky construction debris dumped near Tower C basement entrance',
+    block: 'C',
+    area_name: 'Main Gate Bin Area',
+    status: 'resolved',
+    priority: 'high',
+    priority_reason: 'Obstruction to driveway',
+    resolution_note: 'Debris cleared by housekeeping vendor and area sanitized.',
+    after_photo_url: 'https://images.unsplash.com/photo-1530587191325-3db32d826c18?w=600',
+    created_at: new Date(Date.now() - 86400000).toISOString(),
+    resolved_at: new Date(Date.now() - 3600000).toISOString(),
+    is_anonymous: false,
+    reporter_name: 'Meera Iyer',
+    reporter_avatar: '',
+    upvote_count: 7,
+    i_upvoted: true,
+    is_mine: false,
+    photos: ['https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?w=600'],
+  },
 ]
 
 const mockPickups = [
@@ -124,17 +145,45 @@ export async function getStats() {
 
 export async function getComplaint(id) {
   await delay()
-  const item = mockFeedItems.find((c) => c.id === id) || mockFeedItems[0]
+  const item = mockFeedItems.find((c) => c.id === id)
+  if (!item) return null
+
+  const history = [
+    {
+      from_status: null,
+      to_status: 'submitted',
+      note: 'Complaint registered by resident',
+      created_at: item.created_at,
+    },
+  ]
+
+  if (item.status === 'in_progress' || item.status === 'resolved') {
+    history.push({
+      from_status: 'submitted',
+      to_status: 'acknowledged',
+      note: 'Complaint reviewed and assigned to cleaning squad',
+      created_at: new Date(new Date(item.created_at).getTime() + 1800000).toISOString(),
+    })
+    history.push({
+      from_status: 'acknowledged',
+      to_status: 'in_progress',
+      note: 'Team on site clearing the waste',
+      created_at: new Date(new Date(item.created_at).getTime() + 3600000).toISOString(),
+    })
+  }
+
+  if (item.status === 'resolved') {
+    history.push({
+      from_status: 'in_progress',
+      to_status: 'resolved',
+      note: item.resolution_note || 'Issue resolved with proof',
+      created_at: item.resolved_at || new Date().toISOString(),
+    })
+  }
+
   return {
     ...item,
-    history: [
-      {
-        from_status: null,
-        to_status: 'submitted',
-        note: 'Complaint registered',
-        created_at: item.created_at,
-      },
-    ],
+    history,
   }
 }
 
