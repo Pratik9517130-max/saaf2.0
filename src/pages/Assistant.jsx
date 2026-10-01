@@ -9,11 +9,13 @@ import PriorityBadge from '../components/PriorityBadge'
 import '../styles/assistant.css'
 
 const SUGGESTIONS = [
-  'Tower B parking ka bin overflow ho raha hai',
-  'Gate 1 ke paas kachra pada hai',
-  'Check status',
-  'E-waste pickup schedule karna hai',
-  'Broken glass near playground',
+  '🚨 Tower B parking ka bin overflow ho raha hai',
+  '🧹 Gate 1 ke paas kachra pada hai',
+  '❓ How do I report an issue?',
+  '🔍 Check complaint status',
+  '📦 E-waste pickup schedule karna hai',
+  '♻️ Waste segregation rules kya hai?',
+  '⏰ Garbage collection timing?',
 ]
 
 const speechSupported = typeof window !== 'undefined' && Boolean(window.SpeechRecognition || window.webkitSpeechRecognition)
@@ -30,28 +32,66 @@ function createMessage(sender, text, extra = {}) {
   }
 }
 
+function FormattedText({ text = '' }) {
+  if (!text) return null
+  const lines = text.split('\n')
+
+  return (
+    <div className="formatted-msg">
+      {lines.map((line, lIdx) => {
+        const trimmed = line.trim()
+        if (!trimmed) {
+          return <div key={lIdx} className="msg-spacer" />
+        }
+
+        const isBullet = trimmed.startsWith('•') || trimmed.startsWith('-') || trimmed.startsWith('* ')
+        const cleanLine = isBullet ? trimmed.replace(/^[-*]\s+/, '• ') : line
+
+        const parts = cleanLine.split(/(\*\*.*?\*\*|\*.*?\*)/g)
+        const rendered = parts.map((part, pIdx) => {
+          if (part.startsWith('**') && part.endsWith('**')) {
+            return <strong key={pIdx}>{part.slice(2, -2)}</strong>
+          }
+          if (part.startsWith('*') && part.endsWith('*')) {
+            return <em key={pIdx}>{part.slice(1, -1)}</em>
+          }
+          return part
+        })
+
+        return (
+          <div key={lIdx} className={isBullet ? 'msg-bullet-line' : 'msg-text-line'}>
+            {rendered}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 export default function Assistant() {
   const [messages, setMessages] = useState([
     {
       id: 'msg-init',
       sender: 'assistant',
-      text: 'Namaste! I can file waste complaints from natural voice or Hinglish messages. How can I assist you?',
+      text: 'Namaste! 🙏 I am your **Saaf AI Assistant** for Green Meadows Society.\n\nI can help you file waste complaints from natural English or Hinglish messages, schedule scrap pickups, or check society cleanliness status.\n\nHow can I help you today?',
       timestamp: 'Just now',
     },
   ])
   const [inputText, setInputText] = useState('')
   const [isListening, setIsListening] = useState(false)
+  const [isThinking, setIsThinking] = useState(false)
   const [filingId, setFilingId] = useState(null)
+  const [filedDrafts, setFiledDrafts] = useState({})
   const [areas, setAreas] = useState([])
   const [feed, setFeed] = useState([])
 
   const recognitionRef = useRef(null)
   const messagesEndRef = useRef(null)
 
-  // Scroll to bottom on new messages
+  // Scroll to bottom on new messages or thinking state
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+  }, [messages, isThinking])
 
   // Load context data (areas and feed)
   useEffect(() => {
@@ -122,9 +162,10 @@ export default function Assistant() {
 
     const userMsg = createMessage('user', query)
 
-    // Add user message
+    // Add user message & show thinking indicator
     setMessages((prev) => [...prev, userMsg])
     setInputText('')
+    setIsThinking(true)
 
     // Parse with AI intent engine
     setTimeout(() => {
@@ -137,7 +178,8 @@ export default function Assistant() {
       })
 
       setMessages((prev) => [...prev, botMsg])
-    }, 400)
+      setIsThinking(false)
+    }, 450)
   }
 
   const handleConfirmComplaint = async (draft, msgId) => {
@@ -154,9 +196,11 @@ export default function Assistant() {
         photo_urls: [],
       })
 
+      setFiledDrafts((prev) => ({ ...prev, [msgId]: result.id }))
+
       const successMsg = createMessage(
         'assistant',
-        `✅ Complaint created successfully! Tracking ID: ${result.id}. The housekeeping squad and society admin have been alerted.`,
+        `✅ Complaint registered successfully! Tracking ID: **${result.id}**.\n\nThe housekeeping supervisor and estate office have been alerted. You can track this complaint on the Community Notice Feed.`,
         {
           action: {
             type: 'navigate',
@@ -179,13 +223,12 @@ export default function Assistant() {
     }
   }
 
-
   return (
     <div className="assistant-page">
       <TopBar />
 
       <main className="assistant-container">
-        {/* Prototype Header Banner matching Screenshot 1 */}
+        {/* Prototype Header Banner */}
         <div className="assistant-prototype-banner">
           <div className="assistant-prototype-left">
             <span>PROTOTYPE: SCRIPTED PREVIEW</span>
@@ -201,7 +244,7 @@ export default function Assistant() {
             {messages.map((msg) => (
               <div key={msg.id} className={`chat-row ${msg.sender}`}>
                 <div className="chat-bubble">
-                  <div>{msg.text}</div>
+                  <FormattedText text={msg.text} />
 
                   {/* Render Draft Complaint Card if present */}
                   {msg.draft && (
@@ -213,7 +256,7 @@ export default function Assistant() {
                         <PriorityBadge priority={msg.draft.priority} />
                       </div>
                       <div className="draft-card-meta">
-                        Location: {msg.draft.block ? `Tower ${msg.draft.block}` : ''} • {msg.draft.area_name}
+                        Location: {msg.draft.block ? `Tower ${msg.draft.block} • ` : ''}{msg.draft.area_name}
                       </div>
                       <p className="draft-card-desc">
                         "{msg.draft.description}"
@@ -222,12 +265,18 @@ export default function Assistant() {
                         type="button"
                         className="draft-submit-btn"
                         onClick={() => handleConfirmComplaint(msg.draft, msg.id)}
-                        disabled={filingId === msg.id}
+                        disabled={filingId === msg.id || Boolean(filedDrafts[msg.id])}
                       >
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <polyline points="20 6 9 17 4 12" />
                         </svg>
-                        <span>{filingId === msg.id ? 'Filing Complaint...' : 'Confirm & File Complaint'}</span>
+                        <span>
+                          {filedDrafts[msg.id]
+                            ? '✅ Complaint Filed'
+                            : filingId === msg.id
+                            ? 'Filing Complaint...'
+                            : 'Confirm & File Complaint'}
+                        </span>
                       </button>
                     </div>
                   )}
@@ -268,6 +317,18 @@ export default function Assistant() {
                 <span className="chat-time">{msg.timestamp}</span>
               </div>
             ))}
+
+            {/* Thinking / Typing Animation Bubble */}
+            {isThinking && (
+              <div className="chat-row assistant">
+                <div className="chat-bubble thinking-bubble" aria-label="AI Assistant is thinking">
+                  <span className="typing-dot" />
+                  <span className="typing-dot" />
+                  <span className="typing-dot" />
+                </div>
+              </div>
+            )}
+
             <div ref={messagesEndRef} />
           </div>
 
@@ -278,14 +339,31 @@ export default function Assistant() {
                 key={idx}
                 type="button"
                 className="assistant-chip"
-                onClick={() => handleSendMessage(s)}
+                onClick={() => handleSendMessage(s.replace(/^[^\w\s]+\s*/, ''))}
               >
                 {s}
               </button>
             ))}
           </div>
 
-          {/* Input Bar matching Screenshot 1 */}
+          {/* Voice Listening Active Notice */}
+          {isListening && (
+            <div className="voice-active-notice">
+              <div>
+                <span className="voice-active-pulse" />
+                Listening in English / Hindi... Speak now
+              </div>
+              <button
+                type="button"
+                onClick={toggleVoiceInput}
+                style={{ background: 'none', border: 'none', color: 'var(--terra)', cursor: 'pointer', fontWeight: 700 }}
+              >
+                Stop
+              </button>
+            </div>
+          )}
+
+          {/* Input Bar */}
           <form
             onSubmit={(e) => {
               e.preventDefault()
@@ -320,7 +398,7 @@ export default function Assistant() {
             <button
               type="submit"
               className="assistant-send-btn"
-              disabled={!inputText.trim()}
+              disabled={!inputText.trim() || isThinking}
             >
               Send
             </button>
@@ -332,3 +410,4 @@ export default function Assistant() {
     </div>
   )
 }
+
