@@ -37,6 +37,12 @@ export default function Login() {
       const rawMsg = err?.message || 'Failed to sign in'
       if (rawMsg.toLowerCase().includes('failed to fetch')) {
         setError('Network error: Unable to connect to backend server. Please verify your internet connection or check Supabase settings in .env.local.')
+      } else if (
+        rawMsg.toLowerCase().includes('invalid login credentials') ||
+        rawMsg.toLowerCase().includes('invalid email or password') ||
+        rawMsg.toLowerCase().includes('account not found')
+      ) {
+        setError('Account not found or password incorrect. If you are a new resident, please click "Sign up" below to join your society.')
       } else {
         setError(rawMsg)
       }

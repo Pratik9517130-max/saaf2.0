@@ -52,7 +52,7 @@ export async function signIn(email, password) {
       throw new Error('Network error: Unable to reach authentication server. Please check your network connection or Supabase URL in .env.local.')
     }
     if (msg.toLowerCase().includes('invalid login credentials') || error.status === 400) {
-      throw new Error('Invalid email or password. Please verify your credentials and try again.')
+      throw new Error('Invalid email or password. If you are a new resident, please sign up first.')
     }
     throw new Error(error.message || 'Failed to sign in')
   }

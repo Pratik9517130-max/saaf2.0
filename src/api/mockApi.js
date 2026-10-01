@@ -115,34 +115,102 @@ const mockPickups = [
   },
 ]
 
+const mockRegisteredUsers = new Map([
+  [
+    'admin@society.com',
+    {
+      id: 'usr-admin-1',
+      name: 'Aarav Sharma',
+      flat_no: '402',
+      block: 'A',
+      phone: '9876543210',
+      role: 'admin',
+      password: 'password123',
+    },
+  ],
+  [
+    'resident@society.com',
+    {
+      id: 'usr-resident-1',
+      name: 'Priya Verma',
+      flat_no: '204',
+      block: 'B',
+      phone: '9876543210',
+      role: 'resident',
+      password: 'password123',
+    },
+  ],
+])
+
+let currentSessionUser = null
+
 export async function signIn(email, password) {
   await delay()
-  if (!email || !password) throw new Error('Email and password required')
-  return { ...mockUser, email }
+  if (!email || !password) throw new Error('Email and password are required')
+
+  const cleanEmail = email.toLowerCase().trim()
+  const user = mockRegisteredUsers.get(cleanEmail)
+
+  if (!user) {
+    throw new Error('Account not found with this email. Please sign up first.')
+  }
+
+  if (user.password && user.password !== password) {
+    throw new Error('Invalid email or password. Please check your credentials and try again.')
+  }
+
+  currentSessionUser = {
+    id: user.id,
+    name: user.name,
+    email: cleanEmail,
+    flat_no: user.flat_no,
+    block: user.block,
+    phone: user.phone,
+    role: user.role,
+  }
+
+  return currentSessionUser
 }
 
 export async function signUp({ email, password, name, flat_no, block, phone, join_code }) {
   await delay()
-  if (join_code && join_code.toLowerCase() === 'invalid') {
+  const validCodes = ['SAAF2026', 'GREEN2024', 'DEMO']
+  if (!join_code || !validCodes.includes(join_code.toUpperCase().trim())) {
     throw new Error('Invalid join code')
   }
-  return {
+
+  if (!email || !password) {
+    throw new Error('Email and password are required')
+  }
+
+  const cleanEmail = email.toLowerCase().trim()
+  if (mockRegisteredUsers.has(cleanEmail)) {
+    throw new Error('An account with this email already exists. Please sign in.')
+  }
+
+  const newUser = {
     id: 'usr-' + Date.now(),
     name: name || 'Resident',
     flat_no: flat_no || '101',
     block: block || 'A',
     phone: phone || '',
     role: 'resident',
+    password,
   }
+
+  mockRegisteredUsers.set(cleanEmail, newUser)
+  currentSessionUser = { ...newUser, email: cleanEmail }
+  return currentSessionUser
 }
 
 export async function signOut() {
   await delay()
+  currentSessionUser = null
 }
 
 export async function getSession() {
   await delay()
-  return { ...mockUser }
+  return currentSessionUser || null
 }
 
 export async function getAreas() {

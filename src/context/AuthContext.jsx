@@ -59,25 +59,9 @@ export function AuthProvider({ children }) {
   }, [])
 
   const signIn = async (email, password) => {
-    try {
-      const userProfile = await api.signIn(email, password)
-      setProfile(userProfile)
-      return userProfile
-    } catch (err) {
-      if (email.toLowerCase().includes('admin') || email.toLowerCase().includes('demo') || err.message?.includes('Network error')) {
-        const demoProfile = {
-          id: 'usr-demo-' + (email.includes('admin') ? 'admin' : 'resident'),
-          name: email.toLowerCase().includes('admin') ? 'Aarav Sharma' : 'Priya Verma',
-          flat_no: email.toLowerCase().includes('admin') ? '402' : '204',
-          block: email.toLowerCase().includes('admin') ? 'A' : 'B',
-          phone: '9876543210',
-          role: email.toLowerCase().includes('admin') ? 'admin' : 'resident',
-        }
-        setProfile(demoProfile)
-        return demoProfile
-      }
-      throw err
-    }
+    const userProfile = await api.signIn(email, password)
+    setProfile(userProfile)
+    return userProfile
   }
 
   const loginAsDemo = (role = 'admin') => {
