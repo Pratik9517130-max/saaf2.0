@@ -1,0 +1,317 @@
+/* src/styles/pickup.css - Civic Notice Board Doorstep Pickup Styles */
+
+.pickup-page {
+  min-height: 100vh;
+  background-color: var(--bg);
+  color: var(--ink);
+  display: flex;
+  flex-direction: column;
+}
+
+.pickup-container {
+  width: 100%;
+  max-width: 860px;
+  margin: 0 auto;
+  padding: var(--s-4) var(--s-3) calc(var(--s-6) + 48px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+}
+
+@media (min-width: 768px) {
+  .pickup-container {
+    padding: var(--s-5) var(--s-4) var(--s-6);
+    gap: var(--s-5);
+  }
+}
+
+/* Header */
+.pickup-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+}
+
+.pickup-title-row {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+}
+
+.pickup-title {
+  font-family: var(--font-head);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0;
+}
+
+.pickup-subtitle {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Layout Grid for Desktop */
+.pickup-content-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--s-4);
+}
+
+@media (min-width: 820px) {
+  .pickup-content-grid {
+    grid-template-columns: 1.25fr 1fr;
+    align-items: start;
+  }
+}
+
+/* Main Form Card */
+.pickup-card {
+  background-color: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow);
+  padding: var(--s-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+}
+
+/* Category Selection (Radio Cards) */
+.category-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+
+.category-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.category-cards-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+
+.category-radio-card {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: var(--s-3);
+  border: 1.5px solid var(--line);
+  border-radius: var(--r-sm);
+  background-color: var(--bg);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.category-radio-card:hover {
+  border-color: var(--green);
+  background-color: var(--card);
+}
+
+.category-radio-card.selected {
+  border-color: var(--green);
+  background-color: var(--green-soft);
+}
+
+.category-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-right: var(--s-2);
+}
+
+.category-title {
+  font-family: var(--font-head);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+.category-desc {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+.category-radio-indicator {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+  transition: all 0.15s ease;
+}
+
+.category-radio-card.selected .category-radio-indicator {
+  border-color: var(--green);
+  background-color: var(--green);
+}
+
+.category-radio-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--card);
+}
+
+/* Slots and Date Pickers */
+.slot-selector-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s-2);
+}
+
+.slot-btn {
+  padding: var(--s-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background-color: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s ease;
+}
+
+.slot-btn:hover {
+  border-color: var(--green);
+}
+
+.slot-btn.selected {
+  border-color: var(--green);
+  background-color: var(--green);
+  color: var(--green-ink);
+}
+
+/* Action Button */
+.pickup-submit-btn {
+  background-color: var(--green);
+  color: var(--green-ink);
+  border: 1px solid var(--green);
+  border-radius: var(--r-sm);
+  padding: var(--s-3);
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+}
+
+.pickup-submit-btn:hover:not(:disabled) {
+  opacity: 0.92;
+}
+
+.pickup-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Success Banner */
+.pickup-success-banner {
+  background-color: var(--green-soft);
+  color: var(--green);
+  border: 1px solid var(--green);
+  border-radius: var(--r-sm);
+  padding: var(--s-3);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-2);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* History Card */
+.pickup-history-card {
+  background-color: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow);
+  padding: var(--s-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+
+.history-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: var(--s-2);
+}
+
+.history-card-title {
+  font-family: var(--font-head);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0;
+}
+
+.history-badge {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+
+.history-item {
+  padding: var(--s-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background-color: var(--bg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+}
+
+.history-item-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.history-waste-name {
+  font-family: var(--font-head);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.history-notes {
+  font-size: 13px;
+  color: var(--ink);
+  margin: 0;
+}
+
+.history-meta {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+}

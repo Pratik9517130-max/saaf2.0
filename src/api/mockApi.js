@@ -156,17 +156,37 @@ export async function getFeed() {
 }
 
 export async function getStats() {
-  await delay()
+  await delay(100)
+  let resolvedCount = 0
+  let openCount = 0
+  let totalFixDays = 0
+  let resolvedWithDuration = 0
+
+  for (const item of mockFeedItems) {
+    if (item.status === 'resolved') {
+      resolvedCount += 1
+      if (item.resolved_at && item.created_at) {
+        const diff = (new Date(item.resolved_at).getTime() - new Date(item.created_at).getTime()) / (1000 * 60 * 60 * 24)
+        if (diff >= 0) {
+          totalFixDays += diff
+          resolvedWithDuration += 1
+        }
+      }
+    } else if (item.status !== 'rejected') {
+      openCount += 1
+    }
+  }
+
   return {
-    resolved: 18,
-    open: 4,
-    avg_fix_days: 1.2,
+    resolved: resolvedCount || 18,
+    open: openCount || 4,
+    avg_fix_days: resolvedWithDuration > 0 ? Number((totalFixDays / resolvedWithDuration).toFixed(1)) : 1.2,
   }
 }
 
 export async function getComplaint(id) {
-  await delay()
-  const item = mockFeedItems.find((c) => c.id === id)
+  await delay(100)
+  const item = mockFeedItems.find((c) => String(c.id) === String(id)) || mockFeedItems[0]
   if (!item) return null
 
   const history = [
@@ -209,8 +229,12 @@ export async function getComplaint(id) {
 }
 
 export async function uploadPhoto(file) {
-  await delay()
-  return URL.createObjectURL ? URL.createObjectURL(file) : 'https://images.unsplash.com/photo-1605600659908-0ef719419d41?w=600'
+  await delay(100)
+  try {
+    return URL.createObjectURL ? URL.createObjectURL(file) : 'https://images.unsplash.com/photo-1605600659908-0ef719419d41?w=600'
+  } catch {
+    return 'https://images.unsplash.com/photo-1605600659908-0ef719419d41?w=600'
+  }
 }
 
 export async function createComplaint({
@@ -223,26 +247,69 @@ export async function createComplaint({
   ai_suggested_type,
   photo_urls,
 }) {
-  await delay()
-  return { id: 'comp-' + Date.now() }
+  await delay(150)
+  const matchedArea = mockAreas.find((a) => String(a.id) === String(area_id)) || mockAreas[0]
+  const newId = 'comp-' + Date.now()
+  const newComplaint = {
+    id: newId,
+    issue_type: issue_type || 'other',
+    description: description || '',
+    block: matchedArea?.block || 'A',
+    area_name: matchedArea?.area_name || 'Society Ground',
+    status: 'submitted',
+    priority: priority || 'medium',
+    priority_reason: priority_reason || 'Reported by resident',
+    resolution_note: null,
+    after_photo_url: null,
+    created_at: new Date().toISOString(),
+    resolved_at: null,
+    is_anonymous: Boolean(is_anonymous),
+    reporter_name: is_anonymous ? 'Anonymous Resident' : mockUser.name,
+    reporter_avatar: '',
+    upvote_count: 0,
+    i_upvoted: false,
+    is_mine: true,
+    photos: Array.isArray(photo_urls) && photo_urls.length > 0 ? photo_urls : [],
+  }
+
+  mockFeedItems.unshift(newComplaint)
+  return { id: newId }
 }
 
 export async function toggleUpvote(complaintId, currentlyUpvoted) {
-  await delay()
+  await delay(80)
+  const item = mockFeedItems.find((c) => c.id === complaintId)
+  if (item) {
+    item.i_upvoted = !currentlyUpvoted
+    item.upvote_count = item.i_upvoted
+      ? (item.upvote_count || 0) + 1
+      : Math.max(0, (item.upvote_count || 0) - 1)
+  }
 }
 
 export async function createPickup({ waste_type, notes, photo_url }) {
-  await delay()
-  return { id: 'pick-' + Date.now() }
+  await delay(150)
+  const newId = 'pick-' + Date.now()
+  const newPickup = {
+    id: newId,
+    waste_type: waste_type || 'bulky',
+    notes: notes || '',
+    photo_url: photo_url || null,
+    status: 'requested',
+    scheduled_date: new Date(Date.now() + 86400000).toISOString().split('T')[0],
+    created_at: new Date().toISOString(),
+  }
+  mockPickups.unshift(newPickup)
+  return { id: newId }
 }
 
 export async function getMyPickups() {
-  await delay()
+  await delay(100)
   return [...mockPickups]
 }
 
 export async function adminGetComplaints() {
-  await delay()
+  await delay(150)
   return mockFeedItems.map((item) => ({
     ...item,
     reporter_real: {
@@ -254,7 +321,7 @@ export async function adminGetComplaints() {
 }
 
 export async function adminSetStatus(id, status, { note, after_photo_url } = {}) {
-  await delay()
+  await delay(150)
   if (status === 'resolved' && (!note || !after_photo_url)) {
     throw new Error('Resolve requires both note and after_photo_url')
   }

@@ -36,9 +36,16 @@ export default function Report() {
   const [error, setError] = useState(null)
 
   const selectedAreaIdRef = useRef(selectedAreaId)
-  selectedAreaIdRef.current = selectedAreaId
   const areasRef = useRef(areas)
-  areasRef.current = areas
+
+  useEffect(() => {
+    selectedAreaIdRef.current = selectedAreaId
+  }, [selectedAreaId])
+
+  useEffect(() => {
+    areasRef.current = areas
+  }, [areas])
+
 
   const navigate = useNavigate()
 

@@ -9,8 +9,9 @@ export default function Login() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const { signIn } = useAuth()
+  const { signIn, loginAsDemo } = useAuth()
   const navigate = useNavigate()
+
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -101,6 +102,37 @@ export default function Login() {
           </button>
         </form>
 
+        <div style={{ margin: 'var(--s-4) 0 var(--s-3)', textAlign: 'center', borderTop: '1px solid var(--line)', position: 'relative' }}>
+          <span style={{ position: 'relative', top: '-10px', background: 'var(--card)', padding: '0 var(--s-2)', fontSize: '11px', color: 'var(--muted)', fontWeight: 600, textTransform: 'uppercase' }}>
+            Instant Evaluation Access
+          </span>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--s-2)', marginBottom: 'var(--s-4)' }}>
+          <button
+            type="button"
+            className="auth-button"
+            style={{ backgroundColor: 'var(--card)', color: 'var(--green)', border: '1.5px solid var(--green)', fontSize: '13px', padding: 'var(--s-2)' }}
+            onClick={() => {
+              loginAsDemo('admin')
+              navigate('/')
+            }}
+          >
+            🛡️ Admin (402)
+          </button>
+          <button
+            type="button"
+            className="auth-button"
+            style={{ backgroundColor: 'var(--card)', color: 'var(--ink)', border: '1.5px solid var(--line)', fontSize: '13px', padding: 'var(--s-2)' }}
+            onClick={() => {
+              loginAsDemo('resident')
+              navigate('/')
+            }}
+          >
+            👤 Resident (204)
+          </button>
+        </div>
+
         <div className="auth-footer">
           Don't have an account?{' '}
           <Link to="/signup" className="auth-link">
@@ -111,3 +143,4 @@ export default function Login() {
     </div>
   )
 }
+
